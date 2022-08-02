@@ -1,0 +1,71 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/01/Mux4Way16.hdl
+
+/**
+ * 8 way 1-bit multiplexor:
+ * out = a if sel == 000
+ *       b if sel == 001
+ *       c if sel == 010
+ *       d if sel == 011
+ *       e if sel == 100
+ *       f if sel == 101
+ *       g if sel == 110
+ *       h if sel == 111
+ */
+
+CHIP Mux8Way1 {
+    IN a, b, c, d, e, f, g, h, sel[3];
+    OUT out;
+
+    PARTS:
+    Not(in=sel[0], out=notSel0);
+    Not(in=sel[1], out=notSel1);
+    Not(in=sel[2], out=notSel2);
+
+    And(a=notSel2, b=notSel1, out=A);
+    And(a=A, b=notSel0, out=tmpAA);
+    And(a=tmpAA, b=a, out=tmpA);
+
+
+    And(a=A, b=sel[0], out=tmpBB);
+    And(a=tmpBB, b=b, out=tmpB);
+
+    And(a=notSel2, b=sel[1], out=C);
+    And(a=C, b=notSel0, out=tmpCC);
+    And(a=tmpCC, b=c, out=tmpC);
+
+    And(a=notSel2, b=sel[1], out=D);
+    And(a=D, b=sel[0], out=tmpDD);
+    And(a=tmpDD, b=d, out=tmpD);
+
+    And(a=sel[2], b=notSel1, out=E);
+    And(a=E, b=notSel0, out=tmpEE);
+    And(a=tmpEE, b=e, out=tmpE);
+
+    And(a=sel[2], b=notSel1, out=F);
+    And(a=E, b=sel[0], out=tmpFF);
+    And(a=tmpFF, b=f, out=tmpF);
+
+    And(a=sel[2], b=sel[1], out=G);
+    And(a=G, b=notSel0, out=tmpGG);
+    And(a=tmpGG, b=g, out=tmpG);
+
+    And(a=sel[2], b=sel[1], out=H);
+    And(a=H, b=sel[0], out=tmpHH);
+    And(a=tmpHH, b=h, out=tmpH);
+
+    Or(a=tmpA, b=tmpB, out=tmpAB);
+    Or(a=tmpC, b=tmpD, out=tmpCD);
+    Or(a=tmpE, b=tmpF, out=tmpEF);
+    Or(a=tmpG, b=tmpH, out=tmpGH);
+
+    Or(a=tmpAB, b=tmpCD, out=tmpABCD);
+    Or(a=tmpEF, b=tmpGH, out=tmpEFGH);
+
+    Or(a=tmpABCD, b=tmpEFGH, out=out);
+
+
+
+}

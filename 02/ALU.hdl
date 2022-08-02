@@ -1,0 +1,92 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/02/ALU.hdl
+
+/**
+ * The ALU (Arithmetic Logic Unit).
+ * Computes one of the following functions:
+ * x+y, x-y, y-x, 0, 1, -1, x, y, -x, -y, !x, !y,
+ * x+1, y+1, x-1, y-1, x&y, x|y on two 16-bit inputs, 
+ * according to 6 input bits denoted zx,nx,zy,ny,f,no.
+ * In addition, the ALU computes two 1-bit outputs:
+ * if the ALU output == 0, zr is set to 1; otherwise zr is set to 0;
+ * if the ALU output < 0, ng is set to 1; otherwise ng is set to 0.
+ */
+
+// Implementation: the ALU logic manipulates the x and y inputs
+// and operates on the resulting values, as follows:
+// if (zx == 1) set x = 0        // 16-bit constant
+// if (nx == 1) set x = !x       // bitwise not
+// if (zy == 1) set y = 0        // 16-bit constant
+// if (ny == 1) set y = !y       // bitwise not
+// if (f == 1)  set out = x + y  // integer 2's complement addition
+// if (f == 0)  set out = x & y  // bitwise and
+// if (no == 1) set out = !out   // bitwise not
+// if (out == 0) set zr = 1
+// if (out < 0) set ng = 1
+
+
+CHIP ALU {
+    IN  
+        x[16], y[16],  // 16-bit inputs        
+        zx, // zero the x input?
+        nx, // negate the x input?
+        zy, // zero the y input?
+        ny, // negate the y input?
+        f,  // compute out = x + y (if 1) or x & y (if 0)
+        no; // negate the out output?
+
+    OUT 
+        out[16], // 16-bit output
+        zr, // 1 if (out == 0), 0 otherwise
+        ng; // 1 if (out < 0),  0 otherwise
+
+    PARTS:
+   // Put you code here:
+   Xor(a=x[0], b=x[0], out=ZERO);
+   Not(in=ZERO, out=ONE);
+   // if (zx == 1) set x = 0    
+   And16(a=x, b=false, out=xZxTrue);
+   //else//do nothign with x
+   Mux16(a=x, b=xZxTrue, sel=zx, out=x2);
+
+   // if (nx == 1) set x = !x 
+   Not16(in=x2, out=notX);
+   Mux16(a=x2, b=notX, sel=nx, out=xFinal);
+
+   // if (zy == 1) set y = 0    
+   And16(a=y, b=false, out=yZyTrue);
+   //else//do nothign with y
+   Mux16(a=y, b=yZyTrue, sel=zy, out=y2);
+
+   // if (ny == 1) set y = !y 
+   Not16(in=y2, out=notY);
+   Mux16(a=y2, b=notY, sel=ny, out=yFinal);
+
+   // if (f == 1)  set out = x + y 
+   Add16(a=xFinal, b=yFinal, out=xPLUSy);
+
+   //if (f == 0) set out = x & y;
+   And16(a=xFinal, b=yFinal, out=xANDy);
+
+   //determine what f is now
+   Mux16(a=xANDy, b=xPLUSy, sel=f, out=out2);
+
+   //if (no == 1) set out = !out;
+   Not16(in=out2, out=NOTout2);
+   Mux16(a=out2, b=NOTout2, sel=no, out=out3);
+
+   //if (out == 0) set zr = 1;
+   CheckAllZero(in=out3, out=zr);
+
+   GetMSB(in=out3, out=ng);
+   //if(out < 0) set ng = 1;
+   
+   //copy out3 to out
+   Or16(a=out3, b=false, out=out);
+
+
+
+
+}
