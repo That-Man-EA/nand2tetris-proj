@@ -1,0 +1,7 @@
+CHIP GetFirstBit{
+	
+	IN	in[16];
+	OUT out;
+	PARTS:
+	And(a=true, b=in[0], out=out);
+}
